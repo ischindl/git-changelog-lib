@@ -67,12 +67,13 @@ public class GitLabClient {
 
   private GitLabIssue createGitLabIssue(String projectUrl, GitlabIssue candidate) {
     String title = candidate.getTitle();
+    String desc = candidate.getDescription();
     String link = projectUrl + "/issues/" + candidate.getIid();
     List<String> labels = new ArrayList<>();
     for (String l : candidate.getLabels()) {
       labels.add(l);
     }
-    return new GitLabIssue(title, link, labels);
+    return new GitLabIssue(title, desc, link, labels);
   }
 
   private static List<GitlabIssue> getAllIssues(GitLabProjectIssuesCacheKey cacheKey)
