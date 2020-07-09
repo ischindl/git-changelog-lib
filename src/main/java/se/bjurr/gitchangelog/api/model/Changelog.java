@@ -11,6 +11,7 @@ import se.bjurr.gitchangelog.api.model.interfaces.IIssues;
 public class Changelog implements ICommits, IAuthors, IIssues, Serializable {
   private static final long serialVersionUID = 2193789018496738737L;
   private final List<Commit> commits;
+  private final List<MergeRequest> mergeRequests;
   private final List<Tag> tags;
   private final List<Author> authors;
   private final List<Issue> issues;
@@ -20,6 +21,7 @@ public class Changelog implements ICommits, IAuthors, IIssues, Serializable {
 
   public Changelog(
       List<Commit> commits,
+      List<MergeRequest> mergeRequests,
       List<Tag> tags,
       List<Author> authors,
       List<Issue> issues,
@@ -27,6 +29,7 @@ public class Changelog implements ICommits, IAuthors, IIssues, Serializable {
       String ownerName,
       String repoName) {
     this.commits = checkNotNull(commits, "commits");
+    this.mergeRequests = checkNotNull(mergeRequests, "mergeRequests");
     this.tags = checkNotNull(tags, "tags");
     this.authors = checkNotNull(authors, "authors");
     this.issues = checkNotNull(issues, "issues");
@@ -65,4 +68,9 @@ public class Changelog implements ICommits, IAuthors, IIssues, Serializable {
   public List<IssueType> getIssueTypes() {
     return issueTypes;
   }
+
+  public List<MergeRequest> getMergeRequests() {
+	return mergeRequests;
+  }
+
 }

@@ -20,6 +20,7 @@ public class Issue implements ICommits, IAuthors, Serializable {
 
   private static final long serialVersionUID = -7571341639024417199L;
   private final List<Commit> commits;
+  private final List<MergeRequest> mergeRequests;
   private final List<Author> authors;
   /** Like JIRA, or GitHub. */
   private final String name;
@@ -56,6 +57,7 @@ public class Issue implements ICommits, IAuthors, Serializable {
 
   public Issue(
       List<Commit> commits,
+      List<MergeRequest> mergeRequests,
       List<Author> authors,
       String name,
       String title,
@@ -85,6 +87,7 @@ public class Issue implements ICommits, IAuthors, Serializable {
     this.hasLinkedIssues = linkedIssues != null && !linkedIssues.isEmpty();
     this.linkedIssues = linkedIssues;
     this.labels = labels;
+    this.mergeRequests = mergeRequests;
   }
 
   public SettingsIssueType getIssueType() {
@@ -167,6 +170,10 @@ public class Issue implements ICommits, IAuthors, Serializable {
   @Override
   public List<Commit> getCommits() {
     return commits;
+  }
+
+  public List<MergeRequest> getMergeRequests() {
+    return mergeRequests;
   }
 
   public List<String> getLabels() {

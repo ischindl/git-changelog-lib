@@ -1,8 +1,9 @@
 {
+ "forBranch": "master",
  "fromRepo": ".",
  "fromCommit": "0000000000000000000000000000000000000000",
  "toRef": "refs/heads/master",
- 
+
  "ignoreCommitsIfMessageMatches": "^\\[maven-release-plugin\\].*|^\\[Gradle Release Plugin\\].*|^Merge.*",
  "readableTagName": "/([^/]+?)$",
  "dateFormat": "YYYY-MM-dd HH:mm:ss",

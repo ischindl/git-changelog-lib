@@ -78,8 +78,7 @@ public class IssueParser {
               parsedIssue = createParsedIssue(gitHubHelper, issuePattern, matchedIssue);
             } else if (issuePattern.getType() == GITLAB) {
               final String projectName = settings.getGitLabProjectName().get();
-              parsedIssue =
-                  createParsedIssue(gitLabClient, projectName, issuePattern, matchedIssue);
+              parsedIssue = createParsedIssue(gitLabClient, projectName, issuePattern, matchedIssue);
             } else if (issuePattern.getType() == JIRA) {
               parsedIssue = createParsedIssue(jiraClient, issuePattern, matchedIssue);
             } else {

@@ -27,6 +27,7 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.net.URL;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -41,7 +42,9 @@ import se.bjurr.gitchangelog.internal.git.model.GitCommit;
 import se.bjurr.gitchangelog.internal.git.model.GitTag;
 import se.bjurr.gitchangelog.internal.integrations.mediawiki.MediaWikiClient;
 import se.bjurr.gitchangelog.internal.issues.IssueParser;
+import se.bjurr.gitchangelog.internal.issues.MergeRequestParser;
 import se.bjurr.gitchangelog.internal.model.ParsedIssue;
+import se.bjurr.gitchangelog.internal.model.ParsedMergeRequest;
 import se.bjurr.gitchangelog.internal.model.Transformer;
 import se.bjurr.gitchangelog.internal.settings.Settings;
 import se.bjurr.gitchangelog.internal.settings.SettingsIssue;
@@ -464,11 +467,21 @@ public class GitChangelogApi {
       gitRepoData = removeCommitsWithoutIssue(issues, gitRepoData);
       diff = gitRepoData.getGitCommits();
     }
+    MergeRequestParser mergeRequestParser = new MergeRequestParser(this.settings, diff);
+    // wire issues and MergeRquests with commit
+    List<ParsedMergeRequest> mergeRequests = new ArrayList<>();
+    for(ParsedIssue issue: issues) {
+		issue.addMergeRequests(mergeRequestParser.getIssueMergeRequests(issue.getIssue()));
+		mergeRequests.addAll(issue.getMergeRequests());
+    }
+    mergeRequests = mergeRequestParser.getMergeRequests();
+
     final List<GitTag> tags = gitRepoData.getGitTags();
     final Transformer transformer = new Transformer(this.settings);
     return new Changelog( //
         transformer.toCommits(diff), //
-        transformer.toTags(tags, issues), //
+        transformer.toMergeRequests(mergeRequests), //
+        transformer.toTags(tags, issues, mergeRequests), //
         transformer.toAuthors(diff), //
         transformer.toIssues(issues), //
         transformer.toIssueTypes(issues), //

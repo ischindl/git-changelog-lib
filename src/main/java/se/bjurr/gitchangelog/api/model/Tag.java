@@ -14,6 +14,7 @@ public class Tag implements ICommits, IAuthors, IIssues, Serializable {
   private final List<Author> authors;
   private final List<Commit> commits;
   private final List<Issue> issues;
+  private final List<MergeRequest> mergeRequests;
   private final List<IssueType> issueTypes;
   private final String name;
   private final String tagTime;
@@ -26,12 +27,14 @@ public class Tag implements ICommits, IAuthors, IIssues, Serializable {
       List<Commit> commits,
       List<Author> authors,
       List<Issue> issues,
+      List<MergeRequest> mergeRequests,
       List<IssueType> issueTypes,
       String tagTime,
       Long tagTimeLong) {
     this.commits = commits;
     this.authors = authors;
     this.issues = issues;
+    this.mergeRequests = mergeRequests;
     this.name = name;
     this.annotation = annotation;
     this.issueTypes = issueTypes;
@@ -81,6 +84,10 @@ public class Tag implements ICommits, IAuthors, IIssues, Serializable {
 
   public boolean isHasTagTime() {
     return this.hasTagTime;
+  }
+
+  public List<MergeRequest> getTagMergeRequests() {
+	return mergeRequests;
   }
 
   @Override

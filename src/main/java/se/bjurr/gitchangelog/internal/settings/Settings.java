@@ -35,6 +35,9 @@ public class Settings implements Serializable {
 
   private static Gson gson = new Gson();
 
+  /** Branch for Merge Requests. */
+  private String forBranch;
+
   /** Folder where repo lives. */
   private String fromRepo;
   /** Include all commits from here. Any tag or branch name. */
@@ -175,6 +178,8 @@ public class Settings implements Serializable {
    */
   private String gitLabProjectName;
 
+  private List<String> commitMessagesRemoveTexts;
+
   public Settings() {}
 
   public void setCustomIssues(final List<SettingsIssue> customIssues) {
@@ -196,6 +201,20 @@ public class Settings implements Serializable {
       this.toRef = toRef.trim();
     }
   }
+
+  public void setForBranch(final String forBranch) {
+	    if (forBranch == null || forBranch.trim().isEmpty()) {
+	      this.forBranch = null;
+	    } else {
+	      this.forBranch = forBranch.trim();
+	    }
+	  }
+
+
+  public Optional<String> getForBranch() {
+	    return fromNullable(forBranch);
+	  }
+
 
   public Optional<String> getFromRef() {
     return fromNullable(fromRef);
@@ -457,4 +476,16 @@ public class Settings implements Serializable {
   public Optional<String> getGitLabProjectName() {
     return fromNullable(gitLabProjectName);
   }
+
+
+public List<String> getCommitMessagesRemoveTexts() {
+	if(commitMessagesRemoveTexts== null)
+		commitMessagesRemoveTexts = new ArrayList<>();
+	return commitMessagesRemoveTexts;
+}
+
+
+public void setCommitMessagesRemoveTexts(List<String> commitMessagesRemoveTexts) {
+	this.commitMessagesRemoveTexts = commitMessagesRemoveTexts;
+}
 }

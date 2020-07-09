@@ -11,10 +11,6 @@ import static java.util.TimeZone.getTimeZone;
 import static java.util.regex.Pattern.compile;
 import static se.bjurr.gitchangelog.internal.common.GitPredicates.ignoreCommits;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Function;
-import com.google.common.base.Predicate;
-import com.google.common.collect.Multimap;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -22,10 +18,16 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
+
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Function;
+import com.google.common.base.Predicate;
+import com.google.common.collect.Multimap;
 import se.bjurr.gitchangelog.api.model.Author;
 import se.bjurr.gitchangelog.api.model.Commit;
 import se.bjurr.gitchangelog.api.model.Issue;
 import se.bjurr.gitchangelog.api.model.IssueType;
+import se.bjurr.gitchangelog.api.model.MergeRequest;
 import se.bjurr.gitchangelog.api.model.Tag;
 import se.bjurr.gitchangelog.internal.git.model.GitCommit;
 import se.bjurr.gitchangelog.internal.git.model.GitTag;
@@ -117,7 +119,7 @@ public class Transformer {
     return issueTypes;
   }
 
-  public List<Tag> toTags(List<GitTag> gitTags, final List<ParsedIssue> allParsedIssues) {
+  public List<Tag> toTags(List<GitTag> gitTags, final List<ParsedIssue> allParsedIssues, final List<ParsedMergeRequest> allParsedMergeRequests) {
 
     Iterable<Tag> tags =
         transform(
@@ -128,16 +130,20 @@ public class Transformer {
                 List<GitCommit> gitCommits = input.getGitCommits();
                 List<ParsedIssue> parsedIssues =
                     reduceParsedIssuesToOnlyGitCommits(allParsedIssues, gitCommits);
+                List<ParsedMergeRequest> parsedMergeRequests =
+                        reduceParsedMergRequestsToOnlyGitCommits(allParsedMergeRequests, gitCommits);
                 List<Commit> commits = toCommits(gitCommits);
                 List<Author> authors = toAuthors(gitCommits);
                 List<Issue> issues = toIssues(parsedIssues);
                 List<IssueType> issueTypes = toIssueTypes(parsedIssues);
+                List<MergeRequest> mergedRequests = toMergeRequests(parsedMergeRequests);
                 return new Tag(
                     toReadableTagName(input.getName()),
                     input.findAnnotation().orNull(),
                     commits,
                     authors,
                     issues,
+                    mergedRequests,
                     issueTypes,
                     input.getTagTime() != null ? format(input.getTagTime()) : "",
                     input.getTagTime() != null ? input.getTagTime().getTime() : -1);
@@ -162,10 +168,30 @@ public class Transformer {
                             candidate.getLinkedIssues(),
                             candidate.getLabels());
                     parsedIssue.addCommits(candidateCommits);
+                    parsedIssue.addMergeRequests(candidate.getMergeRequests());
                     parsedIssues.add(parsedIssue);
                   }
                 }
                 return parsedIssues;
+              }
+
+              private List<ParsedMergeRequest> reduceParsedMergRequestsToOnlyGitCommits(
+                  final List<ParsedMergeRequest> allParsedMergeRequests, List<GitCommit> gitCommits) {
+                List<ParsedMergeRequest> parsedMergeRequests = newArrayList();
+                for (ParsedMergeRequest candidate : allParsedMergeRequests) {
+                  if (gitCommits.contains(candidate.getGitCommit())) {
+                	  ParsedMergeRequest parsedMR =
+                        new ParsedMergeRequest(
+                            candidate.getName(),
+                            candidate.getDescription(),
+                            candidate.getLink(),
+                            candidate.getLabels()
+                            );
+                	  parsedMR.setGitCommit(candidate.getGitCommit());
+                    parsedMergeRequests.add(parsedMR);
+                  }
+                }
+                return parsedMergeRequests;
               }
             });
 
@@ -208,6 +234,7 @@ public class Transformer {
         List<GitCommit> gitCommits = input.getGitCommits();
         return new Issue( //
             toCommits(gitCommits), //
+            toMergeRequests(input.getMergeRequests()),
             toAuthors(gitCommits), //
             input.getName(), //
             input.getTitle().or(""), //
@@ -221,6 +248,19 @@ public class Transformer {
       }
     };
   }
+
+  private Function<ParsedMergeRequest, MergeRequest> parsedMergeRequestToMergeRequest() {
+	    return new Function<ParsedMergeRequest, MergeRequest>() {
+	      @Override
+	      public MergeRequest apply(ParsedMergeRequest input) {
+	        return new MergeRequest( //
+	            input.getName(), //
+	            input.getDescription(), //
+	            input.getLink(),
+	            input.getGitCommit()!= null? toCommit(input.getGitCommit()):null);
+	      }
+	    };
+	  }
 
   private String removeIssuesFromString(
       boolean removeIssueFromMessage, List<SettingsIssue> issues, String string) {
@@ -264,6 +304,18 @@ public class Transformer {
 
   @VisibleForTesting
   String toMessage(boolean removeIssueFromMessage, List<SettingsIssue> issues, String message) {
-    return removeIssuesFromString(removeIssueFromMessage, issues, message);
+    return removeStrings(removeIssuesFromString(removeIssueFromMessage, issues, message));
   }
+
+private String removeStrings(String removeIssuesFromString) {
+	for(String text :settings.getCommitMessagesRemoveTexts()){
+		removeIssuesFromString = removeIssuesFromString.replaceAll(text, "");
+	}
+	return removeIssuesFromString;
+}
+
+public List<MergeRequest> toMergeRequests(List<ParsedMergeRequest> from) {
+	return newArrayList(transform(from, parsedMergeRequestToMergeRequest()));
+
+}
 }

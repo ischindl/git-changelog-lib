@@ -5,14 +5,16 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Strings.emptyToNull;
 import static com.google.common.collect.Lists.newArrayList;
 
-import com.google.common.base.Optional;
 import java.util.List;
+
+import com.google.common.base.Optional;
 import se.bjurr.gitchangelog.internal.git.model.GitCommit;
 import se.bjurr.gitchangelog.internal.model.interfaces.IGitCommitReferer;
 import se.bjurr.gitchangelog.internal.settings.SettingsIssueType;
 
 public class ParsedIssue implements IGitCommitReferer {
   private final List<GitCommit> gitCommits = newArrayList();
+  private final List<ParsedMergeRequest> mergeRequests = newArrayList();
   private final String name;
   private final String title;
   private final String link;
@@ -61,7 +63,12 @@ public class ParsedIssue implements IGitCommitReferer {
     return gitCommits;
   }
 
-  public String getLink() {
+
+public List<ParsedMergeRequest> getMergeRequests() {
+	return mergeRequests;
+}
+
+public String getLink() {
     return link;
   }
 
@@ -99,6 +106,10 @@ public class ParsedIssue implements IGitCommitReferer {
     this.gitCommits.add(gitCommit);
   }
 
+  public void addMergeRequest(ParsedMergeRequest mergeRequest) {
+    this.mergeRequests.add(mergeRequest);
+  }
+
   public String getIssue() {
     return issue;
   }
@@ -117,5 +128,9 @@ public class ParsedIssue implements IGitCommitReferer {
 
   public List<String> getLinkedIssues() {
     return linkedIssues;
+  }
+
+  public void addMergeRequests(List<ParsedMergeRequest> mergeRequests) {
+	this.mergeRequests.addAll(mergeRequests);
   }
 }
