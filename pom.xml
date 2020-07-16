@@ -4,7 +4,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>se.bjurr.gitchangelog</groupId>
   <artifactId>git-changelog-lib</artifactId>
-  <version>1.93-SNAPSHOT</version>
+  <version>1.93.ds</version>
   <build>
     <plugins>
       <plugin>
@@ -62,7 +62,7 @@
     <dependency>
       <groupId>org.gitlab</groupId>
       <artifactId>java-gitlab-api</artifactId>
-      <version>4.1.2-SNAPSHOT</version>
+      <version>4.1.1</version>
       <scope>compile</scope>
     </dependency>
     <dependency>
