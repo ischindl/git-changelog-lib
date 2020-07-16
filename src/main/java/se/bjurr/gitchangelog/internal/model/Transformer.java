@@ -18,6 +18,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
+import java.util.stream.Collectors;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
@@ -128,10 +129,10 @@ public class Transformer {
               @Override
               public Tag apply(GitTag input) {
                 List<GitCommit> gitCommits = input.getGitCommits();
-                List<ParsedIssue> parsedIssues =
-                    reduceParsedIssuesToOnlyGitCommits(allParsedIssues, gitCommits);
                 List<ParsedMergeRequest> parsedMergeRequests =
-                        reduceParsedMergRequestsToOnlyGitCommits(allParsedMergeRequests, gitCommits);
+                    reduceParsedMergeRequestsToOnlyGitCommits(allParsedMergeRequests, gitCommits);
+                List<ParsedIssue> parsedIssues =settings.getMergeRequestsFirst()?parsedMergeRequests.stream().map(e -> e.getIssues()).flatMap(List::stream).distinct().collect(Collectors.toList()):
+                        reduceParsedIssuesToOnlyGitCommits(allParsedIssues, gitCommits);
                 List<Commit> commits = toCommits(gitCommits);
                 List<Author> authors = toAuthors(gitCommits);
                 List<Issue> issues = toIssues(parsedIssues);
@@ -153,8 +154,10 @@ public class Transformer {
                   final List<ParsedIssue> allParsedIssues, List<GitCommit> gitCommits) {
                 List<ParsedIssue> parsedIssues = newArrayList();
                 for (ParsedIssue candidate : allParsedIssues) {
-                  List<GitCommit> candidateCommits =
-                      newArrayList(filter(candidate.getGitCommits(), in(gitCommits)));
+                  List<GitCommit> candidateCommits = 
+                		settings.getMergeRequestsFirst()?
+                			candidate.getGitCommits():
+                			newArrayList(filter(candidate.getGitCommits(), in(gitCommits)));
                   if (!candidateCommits.isEmpty()) {
                     ParsedIssue parsedIssue =
                         new ParsedIssue(
@@ -175,19 +178,22 @@ public class Transformer {
                 return parsedIssues;
               }
 
-              private List<ParsedMergeRequest> reduceParsedMergRequestsToOnlyGitCommits(
+              private List<ParsedMergeRequest> reduceParsedMergeRequestsToOnlyGitCommits(
                   final List<ParsedMergeRequest> allParsedMergeRequests, List<GitCommit> gitCommits) {
                 List<ParsedMergeRequest> parsedMergeRequests = newArrayList();
                 for (ParsedMergeRequest candidate : allParsedMergeRequests) {
-                  if (gitCommits.contains(candidate.getGitCommit())) {
+                  if (gitCommits.contains(candidate.getGitMergeCommit())) {
                 	  ParsedMergeRequest parsedMR =
                         new ParsedMergeRequest(
+                            candidate.getId(),
                             candidate.getName(),
                             candidate.getDescription(),
                             candidate.getLink(),
                             candidate.getLabels()
                             );
-                	  parsedMR.setGitCommit(candidate.getGitCommit());
+                	  parsedMR.setGitMergeCommit(candidate.getGitMergeCommit());
+                	  parsedMR.getGitCommits().addAll(candidate.getGitCommits());
+                	  parsedMR.getIssues().addAll(candidate.getIssues());
                     parsedMergeRequests.add(parsedMR);
                   }
                 }
@@ -255,9 +261,11 @@ public class Transformer {
 	      public MergeRequest apply(ParsedMergeRequest input) {
 	        return new MergeRequest( //
 	            input.getName(), //
-	            input.getDescription(), //
+	            input.getId(),
+	            removeStrings(input.getDescription()), // remove unwanted regexp from desc text
 	            input.getLink(),
-	            input.getGitCommit()!= null? toCommit(input.getGitCommit()):null);
+	            input.getGitMergeCommit()!= null? toCommit(input.getGitMergeCommit()):null,
+	            toCommits(input.getGitCommits()));
 	      }
 	    };
 	  }
@@ -319,3 +327,4 @@ public List<MergeRequest> toMergeRequests(List<ParsedMergeRequest> from) {
 
 }
 }
+

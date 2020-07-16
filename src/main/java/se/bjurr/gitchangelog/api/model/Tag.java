@@ -3,7 +3,11 @@ package se.bjurr.gitchangelog.api.model;
 import static com.google.common.base.Strings.isNullOrEmpty;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
+
 import se.bjurr.gitchangelog.api.model.interfaces.IAuthors;
 import se.bjurr.gitchangelog.api.model.interfaces.ICommits;
 import se.bjurr.gitchangelog.api.model.interfaces.IIssues;
@@ -64,6 +68,13 @@ public class Tag implements ICommits, IAuthors, IIssues, Serializable {
   @Override
   public List<Issue> getIssues() {
     return this.issues;
+  }
+
+  public List<Issue> getSortedIssues() {
+	List<Issue> tmp = new ArrayList<>();
+	tmp.addAll(issues);
+    Collections.sort(tmp,Comparator.comparing(e -> e.getId()));
+    return tmp;
   }
 
   public List<IssueType> getIssueTypes() {

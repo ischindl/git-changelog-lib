@@ -29,7 +29,7 @@ public class GitTag implements IGitCommitReferer {
   }
 
   @Override
-  public GitCommit getGitCommit() {
+  public GitCommit getGitMergeCommit() {
     return checkNotNull(this.gitCommits.get(0), this.name);
   }
 
@@ -48,6 +48,6 @@ public class GitTag implements IGitCommitReferer {
 
   @Override
   public String toString() {
-    return "Tag: " + this.name + " Annotation: " + this.annotation + ", " + getGitCommit();
+    return "Tag: " + this.name + " Annotation: " + this.annotation + ", " + getGitMergeCommit();
   }
 }

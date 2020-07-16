@@ -55,7 +55,7 @@ public class ParsedIssue implements IGitCommitReferer {
   }
 
   @Override
-  public GitCommit getGitCommit() {
+  public GitCommit getGitMergeCommit() {
     return checkNotNull(gitCommits.get(0), name);
   }
 

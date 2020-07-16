@@ -5,6 +5,11 @@ Changelog for ischindl git-changelog-lib.
 ## Next release
 ### Other changes
 
+**Added support for GitLab Merge Requests**
+
+
+[3edcd482519f752](https://github.com/ischindl/git-changelog-lib/commit/3edcd482519f752) Imrich Schindler *2020-07-09 06:10:40*
+
 **adding gitlab issue desc**
 
 
